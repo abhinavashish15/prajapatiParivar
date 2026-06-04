@@ -1,0 +1,139 @@
+{
+  "database": "PrajapatiParivar",
+  "tables": {
+    "user_roles": {
+      "columns": {
+        "id": "uuid (references auth.users, Primary Key)",
+        "role": "enum (super_admin, admin, member, guest, Default: guest)",
+        "created_at": "timestamptz (Default: now())",
+        "updated_at": "timestamptz (Default: now())"
+      }
+    },
+    "member_profiles": {
+      "columns": {
+        "id": "uuid (references auth.users, Primary Key)",
+        "full_name": "text (Not Null)",
+        "father_husband_name": "text (Nullable)",
+        "mother_name": "text (Nullable)",
+        "profile_photo": "text (Nullable)",
+        "gender": "text (Check: male, female, other)",
+        "dob": "date (Nullable)",
+        "mobile": "text (Nullable)",
+        "email": "text (Not Null)",
+        "address": "text (Nullable)",
+        "state": "text (Nullable)",
+        "district": "text (Nullable)",
+        "city": "text (Nullable)",
+        "profession": "text (Nullable)",
+        "education": "text (Nullable)",
+        "bio": "text (Nullable)",
+        "status": "enum (pending, approved, rejected, Default: pending)",
+        "created_at": "timestamptz",
+        "updated_at": "timestamptz"
+      }
+    },
+
+    "events": {
+      "columns": {
+        "id": "uuid (Primary Key)",
+        "title": "text (Not Null)",
+        "description": "text (Not Null)",
+        "date": "timestamptz (Not Null)",
+        "location": "text (Not Null)",
+        "image_url": "text (Nullable)",
+        "capacity": "integer (Nullable)",
+        "status": "enum (draft, published, cancelled, completed, Default: draft)",
+        "created_by": "uuid (references auth.users)",
+        "created_at": "timestamptz",
+        "updated_at": "timestamptz"
+      }
+    },
+    "event_registrations": {
+      "columns": {
+        "id": "uuid (Primary Key)",
+        "event_id": "uuid (references events)",
+        "user_id": "uuid (references auth.users)",
+        "registration_date": "timestamptz",
+        "attendance_status": "enum (registered, attended, absent, Default: registered)",
+        "ticket_count": "integer (Default: 1)",
+        "details": "jsonb"
+      }
+    },
+    "news": {
+      "columns": {
+        "id": "uuid (Primary Key)",
+        "title": "text (Not Null)",
+        "content": "text (Not Null)",
+        "category": "text (Not Null)",
+        "image_url": "text (Nullable)",
+        "is_featured": "boolean (Default: false)",
+        "status": "enum (draft, published, Default: draft)",
+        "author_id": "uuid (references auth.users)",
+        "published_at": "timestamptz",
+        "created_at": "timestamptz",
+        "updated_at": "timestamptz"
+      }
+    },
+    "gallery_albums": {
+      "columns": {
+        "id": "uuid (Primary Key)",
+        "title": "text (Not Null)",
+        "description": "text (Nullable)",
+        "cover_image": "text (Nullable)",
+        "created_at": "timestamptz"
+      }
+    },
+    "gallery": {
+      "columns": {
+        "id": "uuid (Primary Key)",
+        "album_id": "uuid (references gallery_albums)",
+        "type": "enum (photo, video, Default: photo)",
+        "url": "text (Not Null)",
+        "caption": "text (Nullable)",
+        "created_at": "timestamptz"
+      }
+    },
+    "testimonials": {
+      "columns": {
+        "id": "uuid (Primary Key)",
+        "user_id": "uuid (references auth.users, Nullable)",
+        "name": "text (Not Null)",
+        "content": "text (Not Null)",
+        "rating": "integer (Check: 1 to 5)",
+        "status": "enum (pending, approved, Default: pending)",
+        "created_at": "timestamptz"
+      }
+    },
+    "contact_messages": {
+      "columns": {
+        "id": "uuid (Primary Key)",
+        "name": "text (Not Null)",
+        "email": "text (Not Null)",
+        "mobile": "text (Nullable)",
+        "subject": "text (Nullable)",
+        "message": "text (Not Null)",
+        "created_at": "timestamptz"
+      }
+    },
+    "complaints": {
+      "columns": {
+        "id": "uuid (Primary Key, Default: gen_random_uuid())",
+        "user_id": "uuid (references auth.users, Nullable)",
+        "title": "text (Not Null)",
+        "description": "text (Not Null)",
+        "type": "text (Check: complaint, need)",
+        "status": "enum (pending, approved, rejected, resolved, Default: pending)",
+        "is_anonymous": "boolean (Default: false)",
+        "contact_name": "text (Nullable)",
+        "contact_mobile": "text (Nullable)",
+        "attachment_url": "text (Nullable)",
+        "verified_by": "uuid (references auth.users, Nullable)",
+        "verified_at": "timestamptz (Nullable)",
+        "resolved_at": "timestamptz (Nullable)",
+        "created_at": "timestamptz",
+        "updated_at": "timestamptz"
+      }
+    }
+  }
+}
+

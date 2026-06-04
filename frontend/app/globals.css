@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --font-sans: var(--font-inter), sans-serif;
+  --font-heading: var(--font-outfit), sans-serif;
+}
+
+:root {
+  --background: #fdf8f5;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #ea580c; /* Clay Orange */
+  --primary-foreground: #ffffff;
+  --secondary: #f3e8e2; /* Sand Beige */
+  --secondary-foreground: #7c2d12; /* Terracotta Brown */
+  --muted: #f5ebe6;
+  --muted-foreground: #78716c;
+  --accent: #ffedd5;
+  --accent-foreground: #c2410c;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e7d8cd;
+  --input: #e7d8cd;
+  --ring: #ea580c;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: #110e0c;
+  --foreground: #f7f5f4;
+  --card: #1c1613;
+  --card-foreground: #f7f5f4;
+  --popover: #1c1613;
+  --popover-foreground: #f7f5f4;
+  --primary: #f97316;
+  --primary-foreground: #110e0c;
+  --secondary: #2d221c;
+  --secondary-foreground: #fdba74;
+  --muted: #2d221c;
+  --muted-foreground: #a8a29e;
+  --accent: #4a3328;
+  --accent-foreground: #ffedd5;
+  --destructive: #ea580c;
+  --destructive-foreground: #ffffff;
+  --border: #3d3027;
+  --input: #3d3027;
+  --ring: #f97316;
+}
+
+/* Custom Base Styles */
+* {
+  border-color: var(--border);
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Claymorphic and decorative classes */
+.clay-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.clay-pattern {
+  background-color: var(--background);
+  background-image: radial-gradient(var(--border) 0.5px, transparent 0.5px), radial-gradient(var(--border) 0.5px, var(--background) 0.5px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.clay-heading {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}

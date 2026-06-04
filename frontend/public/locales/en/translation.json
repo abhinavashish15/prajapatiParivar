@@ -1,0 +1,75 @@
+{
+  "nav": {
+    "home": "Home",
+    "directory": "Directory",
+    "news": "News",
+    "events": "Events",
+    "gallery": "Gallery",
+    "complaints": "Complaints",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Sign In"
+  },
+  "home": {
+    "heroTagline": "Connecting the Prajapati Community",
+    "heroTitle": "Prajapati Parivar",
+    "heroCommunityTitle": "Digital Samaj",
+    "heroSubtitle": "The official digital directory, news, and events platform for the Prajapati community. Reconnect with families, find verified contacts, and celebrate our shared heritage.",
+    "joinCommunity": "Join Community",
+    "exploreDirectory": "Explore Directory",
+    "clayArt": "Traditional Terracotta Art",
+    "clayArtDesc": "Celebrating and preserving our master artisans' pottery heritage. Discover traditional techniques passed down through generations.",
+    "exploreHeritage": "Explore Our Heritage",
+    "ourPurpose": "Our Purpose",
+    "connectingFamilies": "Connecting Families Across Generations",
+    "connectingDesc": "A modern platform designed to unify the Prajapati Samaj, fostering collaboration, mutual support, and cultural preservation.",
+    "verifiedNetwork": "Verified Members Only",
+    "verifiedNetworkDesc": "All profiles are manually verified to ensure safety and trust within the community.",
+    "profilePrivacy": "Granular Privacy Controls",
+    "profilePrivacyDesc": "You choose what contact information is shared and who can view your profile.",
+    "latestNews": "Samaj News",
+    "viewAllNews": "View All News",
+    "upcomingEvents": "Upcoming Events",
+    "viewAllEvents": "View All Events",
+    "recentComplaints": "Community Needs & Requests",
+    "recentComplaintsSubtitle": "Recent appeals, support requests, and issues verified by our community board.",
+    "viewAllComplaints": "View All Appeals",
+    "by": "By",
+    "anonymousMember": "Anonymous Member",
+    "member": "Member",
+    "offerHelp": "Offer Help",
+    "featuredMembers": "Featured Professionals",
+    "featuredMembersSubtitle": "Highlighting outstanding contributors, professionals, and artisans in our Samaj.",
+    "verifiedMember": "Verified Samaj Member",
+    "testimonials": "Voices from the Samaj",
+    "testimonialsSubtitle": "How the Prajapati Parivar platform is helping members connect and collaborate.",
+    "readyToJoin": "Ready to Join Prajapati Parivar?",
+    "readyToJoinDesc": "Create your profile today, connect with verified members, and stay updated with your Samaj.",
+    "registerAsMember": "Register as Member",
+    "contactOffice": "Contact Samaj Office"
+  },
+  "directory": {
+    "findConnect": "Search verified contacts",
+    "viewProfile": "View Profile"
+  },
+  "news": {
+    "getLatest": "Get latest Samaj updates",
+    "readMore": "Read More",
+    "publishedOn": "Published on"
+  },
+  "events": {
+    "stayUpdated": "Register for upcoming events",
+    "registerNow": "Register Now"
+  },
+  "gallery": {
+    "browsePhotos": "Browse event and heritage photos",
+    "viewGallery": "View Gallery"
+  },
+  "complaints": {
+    "complaint": "Issue",
+    "need": "Need Support"
+  },
+  "common": {
+    "view": "View"
+  }
+}
