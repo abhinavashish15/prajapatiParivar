@@ -73,6 +73,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [role, setRole] = useState<string>('guest');
+  const [memberStatus, setMemberStatus] = useState<string>('pending');
   const [memberSuccess, setMemberSuccess] = useState(false);
   const [profileTab, setProfileTab] = useState<'dashboard' | 'profile' | 'complaints'>('dashboard');
   const [myComplaints, setMyComplaints] = useState<Complaint[]>([]);
@@ -131,6 +132,7 @@ export default function ProfilePage() {
           .single();
 
         if (mProfile) {
+          setMemberStatus(mProfile.status);
           setProfilePhoto(mProfile.profile_photo);
           memberForm.reset({
             fullName: mProfile.full_name || '',
@@ -374,8 +376,14 @@ export default function ProfilePage() {
                   </div>
                   <div className="bg-secondary/50 border border-border rounded-2xl p-4 flex flex-col items-center justify-center text-center">
                     <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Profile Status</span>
-                    <span className="text-lg font-bold text-green-600 flex items-center gap-1">
-                      <CheckCircle className="w-4 h-4" /> Active
+                    <span className={`text-lg font-bold flex items-center gap-1 capitalize ${
+                      memberStatus === 'approved' ? 'text-green-600' :
+                      memberStatus === 'rejected' ? 'text-red-600' : 'text-amber-500'
+                    }`}>
+                      {memberStatus === 'approved' ? <CheckCircle className="w-4 h-4" /> : 
+                       memberStatus === 'rejected' ? <XCircle className="w-4 h-4" /> : 
+                       <Clock className="w-4 h-4" />} 
+                      {memberStatus}
                     </span>
                   </div>
                 </div>

@@ -256,12 +256,12 @@ class MemberController {
       return success(res, 'User role updated successfully', updated);
     } catch (err) {
       console.error('MemberController.changeRole error:', err);
-      return error(res, 'Failed to update user role.', 500);
+      return error(res, 'Failed to update member role.', 500);
     }
   }
 
   /**
-   * Admin: Permanently delete a member and their auth account
+   * Admin: Completely delete a member and auth account
    */
   static async deleteMember(req, res) {
     try {

@@ -231,6 +231,33 @@ export default function AdminPage() {
     }
   };
 
+  // Handle Change Role
+  const handleChangeRole = async (id: string, newRole: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+
+      const res = await fetch(`${apiUrl}/members/${id}/role`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+
+      if (res.ok) {
+        showSuccessBanner(`Member role updated to ${newRole}!`);
+        setAllMembers(allMembers.map((m) => m.id === id ? { ...m, role: newRole } : m));
+      } else {
+        const err = await res.json();
+        alert('Failed to update role: ' + (err.message || 'Unknown error'));
+      }
+    } catch (e: any) {
+      alert('Error updating role: ' + e.message);
+    }
+  };
+
   // Handle Delete Member Permanently
   const handleDeleteMember = async (id: string) => {
     if (!window.confirm('Are you sure you want to permanently delete this user? This cannot be undone.')) return;
@@ -661,6 +688,15 @@ export default function AdminPage() {
                                     {m.is_featured ? 'Featured on Home' : 'Feature on Home'}
                                   </button>
                                 )}
+                                <select
+                                  value={m.role || 'guest'}
+                                  onChange={(e) => handleChangeRole(m.id, e.target.value)}
+                                  className="px-2 py-1.5 ml-1 bg-secondary/50 text-[10px] uppercase font-bold rounded-lg border border-border cursor-pointer outline-none"
+                                  title="Change Role"
+                                >
+                                  <option value="guest">Guest</option>
+                                  <option value="member">Member</option>
+                                </select>
                                 <button
                                   onClick={() => handleDeleteMember(m.id)}
                                   className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer inline-flex items-center"
