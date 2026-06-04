@@ -111,31 +111,18 @@ class Member {
   }
 
   /**
-   * Retrieve all roles
-   */
-  static async findAllRoles() {
-    return await SupabaseService.findAll(this.ROLES_TABLE, { limit: 5000 });
-  }
-
-  /**
    * Retrieve role for a user
    */
   static async getRole(userId) {
-    return await SupabaseService.findOne(this.ROLES_TABLE, userId);
+    const profile = await SupabaseService.findOne(this.TABLE, userId);
+    return profile ? { id: profile.id, role: profile.role || 'guest' } : null;
   }
 
   /**
    * Update or set a user's role
    */
   static async setRole(userId, role) {
-    const existing = await this.getRole(userId);
-    const updated_at = new Date().toISOString();
-    
-    if (existing) {
-      return await SupabaseService.update(this.ROLES_TABLE, { id: userId }, { role, updated_at });
-    } else {
-      return await SupabaseService.create(this.ROLES_TABLE, { id: userId, role, updated_at });
-    }
+    return await SupabaseService.update(this.TABLE, { id: userId }, { role, updated_at: new Date().toISOString() });
   }
 }
 

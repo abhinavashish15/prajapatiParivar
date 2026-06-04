@@ -115,7 +115,7 @@ export default function ProfilePage() {
       try {
         // Fetch User Role
         const { data: roleData } = await supabase
-          .from('user_roles')
+          .from('member_profiles')
           .select('role')
           .eq('id', currentSession.user.id)
           .single();

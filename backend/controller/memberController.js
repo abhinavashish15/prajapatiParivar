@@ -38,19 +38,12 @@ class MemberController {
 
       if (dbError) throw dbError;
 
-      // Fetch user roles to merge into member data
-      const { data: rolesData, error: rolesError } = await require('../models/Member').findAllRoles();
-      const rolesMap = {};
-      if (!rolesError && rolesData) {
-        rolesData.forEach(r => { rolesMap[r.id] = r.role; });
-      }
-
       const membersWithRoles = data.map(m => ({
         ...m,
-        role: rolesMap[m.id] || 'member' // default to member if they have a profile
+        role: m.role || 'guest'
       }));
 
-      return success(res, 'Members fetched successfully', {
+      return success(res, 'Members retrieved successfully', {
         members: membersWithRoles,
         pagination: {
           total: count,

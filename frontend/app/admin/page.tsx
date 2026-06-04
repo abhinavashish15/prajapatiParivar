@@ -77,10 +77,10 @@ export default function AdminPage() {
 
       setUserId(session.user.id);
 
-      // Fetch user role
+      // Fetch user role from member_profiles
       try {
         const { data, error } = await supabase
-          .from('user_roles')
+          .from('member_profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
@@ -132,13 +132,18 @@ export default function AdminPage() {
         complaints: complaintsRes.count || 0
       });
 
-      // Load all members
-      const { data: membersData } = await supabase
-        .from('member_profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (membersData) setAllMembers(membersData as MemberProfile[]);
+      // Load all members via API to get role mapping
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+      const apiMembersRes = await fetch(`${apiUrl}/members?limit=10000`, {
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ''}`
+        }
+      });
+      const membersJson = await apiMembersRes.json();
+      
+      if (apiMembersRes.ok && membersJson.success && membersJson.data?.members) {
+        setAllMembers(membersJson.data.members as MemberProfile[]);
+      }
 
       // Load complaints
       const { data: complaintsData } = await supabase
@@ -639,8 +644,16 @@ export default function AdminPage() {
                       }).map((m) => (
                         <tr key={m.id} className="hover:bg-secondary/10 transition-colors">
                           <td className="p-3">
-                            <div className="font-bold text-foreground flex items-center gap-2">
+                            <div className="font-bold text-foreground flex flex-wrap items-center gap-2">
                               {m.full_name}
+                              <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${
+                                m.role === 'super_admin' ? 'bg-purple-100 text-purple-700' :
+                                m.role === 'admin' ? 'bg-blue-100 text-blue-700' :
+                                m.role === 'member' ? 'bg-emerald-100 text-emerald-700' :
+                                'bg-stone-100 text-stone-600'
+                              }`}>
+                                {m.role ? m.role.replace('_', ' ') : 'Guest'}
+                              </span>
                               {m.is_featured && (
                                 <span title="Featured Member">
                                   <Award className="w-3.5 h-3.5 text-amber-500" />
@@ -654,58 +667,54 @@ export default function AdminPage() {
                           </td>
                           <td className="p-3">{m.profession}</td>
                           <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
-                            {m.role === 'super_admin' || m.role === 'admin' ? (
-                              <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-[10px] font-bold uppercase tracking-wider">
-                                {m.role === 'super_admin' ? 'Super Admin' : 'Admin'}
-                              </span>
-                            ) : (
-                              <>
-                                {m.status === 'pending' && (
-                                  <>
-                                    <button
-                                      onClick={() => handleApproveMember(m.id, true)}
-                                      className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer inline-flex items-center"
-                                      title="Approve"
-                                    >
-                                      <Check className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleApproveMember(m.id, false)}
-                                      className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer inline-flex items-center"
-                                      title="Reject"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </button>
-                                  </>
-                                )}
-                                {m.status === 'approved' && (
+                            <div className="flex items-center justify-end gap-1.5">
+                              {m.status === 'pending' && (
+                                <>
                                   <button
-                                    onClick={() => handleToggleFeatured(m.id, !!m.is_featured)}
-                                    className={`px-2 py-1.5 rounded-lg cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold ${m.is_featured ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
-                                    title={m.is_featured ? "Remove from Home Page" : "Feature on Home Page"}
+                                    onClick={() => handleApproveMember(m.id, true)}
+                                    className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer inline-flex items-center"
+                                    title="Approve"
                                   >
-                                    <Award className="w-3.5 h-3.5" />
-                                    {m.is_featured ? 'Featured on Home' : 'Feature on Home'}
+                                    <Check className="w-4 h-4" />
                                   </button>
-                                )}
-                                <select
-                                  value={m.role || 'guest'}
-                                  onChange={(e) => handleChangeRole(m.id, e.target.value)}
-                                  className="px-2 py-1.5 ml-1 bg-secondary/50 text-[10px] uppercase font-bold rounded-lg border border-border cursor-pointer outline-none"
-                                  title="Change Role"
-                                >
-                                  <option value="guest">Guest</option>
-                                  <option value="member">Member</option>
-                                </select>
+                                  <button
+                                    onClick={() => handleApproveMember(m.id, false)}
+                                    className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer inline-flex items-center"
+                                    title="Reject"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
+                              {m.status === 'approved' && (
                                 <button
-                                  onClick={() => handleDeleteMember(m.id)}
-                                  className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer inline-flex items-center"
-                                  title="Delete Permanently"
+                                  onClick={() => handleToggleFeatured(m.id, !!m.is_featured)}
+                                  className={`px-2 py-1.5 rounded-lg cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold ${m.is_featured ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+                                  title={m.is_featured ? "Remove from Home Page" : "Feature on Home Page"}
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  <Award className="w-3.5 h-3.5" />
+                                  {m.is_featured ? 'Featured on Home' : 'Feature on Home'}
                                 </button>
-                              </>
-                            )}
+                              )}
+                              <select
+                                value={m.role || 'guest'}
+                                onChange={(e) => handleChangeRole(m.id, e.target.value)}
+                                className="px-2 py-1.5 ml-1 bg-secondary/50 text-[10px] uppercase font-bold rounded-lg border border-border cursor-pointer outline-none"
+                                title="Change Role"
+                              >
+                                <option value="guest">Guest</option>
+                                <option value="member">Member</option>
+                                <option value="admin">Admin</option>
+                                <option value="super_admin">Super Admin</option>
+                              </select>
+                              <button
+                                onClick={() => handleDeleteMember(m.id)}
+                                className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer inline-flex items-center"
+                                title="Delete Permanently"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
