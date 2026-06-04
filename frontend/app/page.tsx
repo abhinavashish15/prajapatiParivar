@@ -355,8 +355,13 @@ export default function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {members.map((member) => (
             <div key={member.id} className="bg-card border border-border rounded-2xl p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow relative">
-              <span className="absolute top-4 right-4 text-xs font-bold px-2 py-0.5 bg-orange-100 dark:bg-orange-950/40 text-primary rounded-full">
-                {member.role === 'super_admin' ? 'Super Admin' : (member.role === 'admin' ? 'Admin' : member.state)}
+              <span className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                member.role === 'super_admin' ? 'bg-purple-100 text-purple-700' :
+                member.role === 'admin' ? 'bg-blue-100 text-blue-700' :
+                member.role === 'member' ? 'bg-emerald-100 text-emerald-700' :
+                'bg-stone-100 text-stone-600'
+              }`}>
+                {member.role ? member.role.replace('_', ' ') : 'Guest'}
               </span>
               <img
                 src={member.profile_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=300'}

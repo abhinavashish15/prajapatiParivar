@@ -114,7 +114,7 @@ class Member {
    * Retrieve role for a user
    */
   static async getRole(userId) {
-    const profile = await SupabaseService.findOne(this.TABLE, userId);
+    const profile = await SupabaseService.findOne(Member.TABLE, userId);
     return profile ? { id: profile.id, role: profile.role || 'guest' } : null;
   }
 
@@ -122,7 +122,7 @@ class Member {
    * Update or set a user's role
    */
   static async setRole(userId, role) {
-    return await SupabaseService.update(this.TABLE, { id: userId }, { role, updated_at: new Date().toISOString() });
+    return await SupabaseService.update(Member.TABLE, { id: userId }, { role, updated_at: new Date().toISOString() });
   }
 }
 
