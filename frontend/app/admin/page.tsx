@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/lib/supabase';
-import { LayoutDashboard, Users, Heart, Calendar, Newspaper, Image as ImageIcon, Check, X, ShieldAlert, Award, Save, CheckCircle, AlertTriangle, HandHelping, Phone, User, Clock, FileText } from 'lucide-react';
+import { LayoutDashboard, Users, Heart, Calendar, Newspaper, Image as ImageIcon, Check, X, ShieldAlert, Award, Save, CheckCircle, AlertTriangle, HandHelping, Phone, User, Clock, FileText, Trash2 } from 'lucide-react';
 import { MemberProfile, UserRole, Complaint } from '@/types';
 
 // Zod news schema
@@ -52,7 +52,8 @@ export default function AdminPage() {
   });
 
   // Approvals Tables
-  const [pendingMembers, setPendingMembers] = useState<MemberProfile[]>([]);
+  const [allMembers, setAllMembers] = useState<MemberProfile[]>([]);
+  const [memberFilter, setMemberFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [allComplaints, setAllComplaints] = useState<Complaint[]>([]);
   const [complaintFilter, setComplaintFilter] = useState<'pending' | 'approved' | 'resolved' | 'rejected'>('pending');
 
@@ -68,14 +69,14 @@ export default function AdminPage() {
     async function checkAuth() {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
-        router.push('/sign-in?redirect=/admin');
+        router.push('/admin/login');
         return;
       }
 
       setUserId(session.user.id);
-      
+
       // Fetch user role
       try {
         const { data, error } = await supabase
@@ -131,24 +132,24 @@ export default function AdminPage() {
         complaints: complaintsRes.count || 0
       });
 
-      // Load pending member approvals
-      const { data: membersPending } = await supabase
+      // Load all members
+      const { data: membersData } = await supabase
         .from('member_profiles')
         .select('*')
-        .eq('status', 'pending');
-      
-      if (membersPending) setPendingMembers(membersPending as MemberProfile[]);
+        .order('created_at', { ascending: false });
+
+      if (membersData) setAllMembers(membersData as MemberProfile[]);
 
       // Load complaints
       const { data: complaintsData } = await supabase
         .from('complaints')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (complaintsData) setAllComplaints(complaintsData as Complaint[]);
     } catch {
       // Mock pending lists if unseeded
-      setPendingMembers([
+      setAllMembers([
         {
           id: 'p_m1',
           full_name: 'Dinesh Prajapati',
@@ -164,6 +165,7 @@ export default function AdminPage() {
           education: 'B.E. Civil',
           bio: 'Building dreams in Jodhpur.',
           status: 'pending',
+          is_featured: false,
           created_at: '',
           updated_at: ''
         }
@@ -202,11 +204,57 @@ export default function AdminPage() {
 
       if (!error) {
         showSuccessBanner(`Member profile ${status} successfully!`);
-        setPendingMembers(pendingMembers.filter((m) => m.id !== id));
+        setAllMembers(allMembers.map((m) => m.id === id ? { ...m, status: status as 'approved' | 'rejected' } : m));
       }
     } catch {
       showSuccessBanner(`Member profile ${status} successfully (simulation)!`);
-      setPendingMembers(pendingMembers.filter((m) => m.id !== id));
+      setAllMembers(allMembers.map((m) => m.id === id ? { ...m, status: status as 'approved' | 'rejected' } : m));
+    }
+  };
+
+  // Handle Toggle Featured
+  const handleToggleFeatured = async (id: string, currentFeatured: boolean) => {
+    const newFeatured = !currentFeatured;
+    try {
+      const { error } = await supabase
+        .from('member_profiles')
+        .update({ is_featured: newFeatured })
+        .eq('id', id);
+
+      if (!error) {
+        showSuccessBanner(`Member featured status updated!`);
+        setAllMembers(allMembers.map((m) => m.id === id ? { ...m, is_featured: newFeatured } : m));
+      }
+    } catch {
+      showSuccessBanner(`Member featured status updated (simulation)!`);
+      setAllMembers(allMembers.map((m) => m.id === id ? { ...m, is_featured: newFeatured } : m));
+    }
+  };
+
+  // Handle Delete Member Permanently
+  const handleDeleteMember = async (id: string) => {
+    if (!window.confirm('Are you sure you want to permanently delete this user? This cannot be undone.')) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+
+      const res = await fetch(`${apiUrl}/members/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (res.ok) {
+        showSuccessBanner(`Member permanently deleted!`);
+        setAllMembers(allMembers.filter((m) => m.id !== id));
+      } else {
+        const errorData = await res.json();
+        showSuccessBanner(`Failed to delete member: ${errorData.message || 'Server error'}`);
+      }
+    } catch {
+      showSuccessBanner(`Failed to delete member (network error).`);
     }
   };
 
@@ -215,7 +263,7 @@ export default function AdminPage() {
     try {
       const { error } = await supabase
         .from('complaints')
-        .update({ 
+        .update({
           status,
           verified_by: userId,
           verified_at: new Date().toISOString()
@@ -237,7 +285,7 @@ export default function AdminPage() {
     try {
       const { error } = await supabase
         .from('complaints')
-        .update({ 
+        .update({
           status: 'resolved',
           resolved_at: new Date().toISOString()
         })
@@ -354,14 +402,14 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow w-full space-y-8">
-      
+
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border pb-6 gap-4">
         <div>
           <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-foreground">Admin Control Console</h1>
           <p className="text-xs text-muted-foreground">Manage approvals, write news, and schedule events.</p>
         </div>
-        
+
         {/* Role badge */}
         <span className="px-3.5 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full uppercase tracking-wider">
           Role: {userRole.replace('_', ' ')}
@@ -377,32 +425,30 @@ export default function AdminPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        
+
         {/* Sidebar Nav */}
         <div className="lg:col-span-1 bg-card border border-border rounded-3xl p-3.5 space-y-1 h-fit">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${
-              activeTab === 'overview' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
-            }`}
+            className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${activeTab === 'overview' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
+              }`}
           >
             <LayoutDashboard className="w-4.5 h-4.5" />
             Dashboard Overview
           </button>
-          
+
           <button
             onClick={() => setActiveTab('members')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${
-              activeTab === 'members' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${activeTab === 'members' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
+              }`}
           >
             <span className="flex items-center gap-2">
               <Users className="w-4.5 h-4.5" />
-              Member Approvals
+              Member Directory
             </span>
-            {pendingMembers.length > 0 && (
+            {allMembers.filter((m) => m.status === 'pending').length > 0 && (
               <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${activeTab === 'members' ? 'bg-white text-primary' : 'bg-primary text-white'}`}>
-                {pendingMembers.length}
+                {allMembers.filter((m) => m.status === 'pending').length}
               </span>
             )}
           </button>
@@ -411,9 +457,8 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('news')}
-            className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${
-              activeTab === 'news' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
-            }`}
+            className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${activeTab === 'news' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
+              }`}
           >
             <Newspaper className="w-4.5 h-4.5" />
             News Publisher
@@ -421,9 +466,8 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('events')}
-            className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${
-              activeTab === 'events' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
-            }`}
+            className={`w-full flex items-center gap-2 px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${activeTab === 'events' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
+              }`}
           >
             <Calendar className="w-4.5 h-4.5" />
             Event Scheduler
@@ -431,9 +475,8 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab('complaints')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${
-              activeTab === 'complaints' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
-            }`}
+            className={`w-full flex items-center justify-between px-3 py-2.5 text-xs sm:text-sm font-semibold rounded-xl text-left cursor-pointer transition-colors ${activeTab === 'complaints' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary hover:bg-secondary/40'
+              }`}
           >
             <span className="flex items-center gap-2">
               <AlertTriangle className="w-4.5 h-4.5" />
@@ -450,11 +493,11 @@ export default function AdminPage() {
 
         {/* Workspace panel */}
         <div className="lg:col-span-4 space-y-6">
-          
+
           {/* TAB 1: OVERVIEW METRICS */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              
+
               {/* Analytics grid */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-2">
@@ -495,14 +538,14 @@ export default function AdminPage() {
               <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 space-y-4">
                 <h3 className="font-heading font-bold text-lg text-foreground">Quick Management Actions</h3>
                 <p className="text-xs text-muted-foreground">Select a task from the side panel or run shortcuts below:</p>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <button
                     onClick={() => setActiveTab('members')}
                     className="w-full p-4 rounded-2xl bg-secondary/30 hover:bg-secondary/60 text-left border border-border transition-colors cursor-pointer text-xs space-y-1"
                   >
                     <strong className="text-foreground block font-bold text-sm">Verify Member Profiles</strong>
-                    <span className="text-muted-foreground block text-[11px]">Assess {pendingMembers.length} pending profiles applying to directory.</span>
+                    <span className="text-muted-foreground block text-[11px]">Assess {allMembers.filter(m => m.status === 'pending').length} pending profiles applying to directory.</span>
                   </button>
 
                   <button
@@ -522,14 +565,32 @@ export default function AdminPage() {
           {/* TAB 2: MEMBER DIRECTORY APPROVALS */}
           {activeTab === 'members' && (
             <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-              <div>
-                <h3 className="font-heading font-bold text-lg text-foreground">Directory Approvals ({pendingMembers.length})</h3>
-                <p className="text-xs text-muted-foreground">Review applications before listing them in the public database directory.</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-heading font-bold text-lg text-foreground">Directory Management</h3>
+                  <p className="text-xs text-muted-foreground">Review applications and feature approved members.</p>
+                </div>
+
+                {/* Sub filter buttons */}
+                <div className="flex bg-secondary/60 border border-border p-1 rounded-xl w-fit">
+                  {(['pending', 'approved', 'rejected'] as const).map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setMemberFilter(status)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all uppercase tracking-wider ${memberFilter === status
+                          ? 'bg-primary text-white shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {pendingMembers.length === 0 ? (
+              {allMembers.filter((m) => m.status === memberFilter).length === 0 ? (
                 <div className="text-center py-10 text-xs text-muted-foreground">
-                  🎉 No pending member applications. Excellent!
+                  No member profiles found for "{memberFilter}" status.
                 </div>
               ) : (
                 <div className="overflow-x-auto w-full border border-border rounded-2xl">
@@ -543,10 +604,18 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
-                      {pendingMembers.map((m) => (
+                      {allMembers.filter((m) => {
+                        if (m.role === 'super_admin' || m.role === 'admin') {
+                          return memberFilter === 'approved';
+                        }
+                        return m.status === memberFilter;
+                      }).map((m) => (
                         <tr key={m.id} className="hover:bg-secondary/10 transition-colors">
                           <td className="p-3">
-                            <div className="font-bold text-foreground">{m.full_name}</div>
+                            <div className="font-bold text-foreground flex items-center gap-2">
+                              {m.full_name}
+                              {m.is_featured && <Award className="w-3.5 h-3.5 text-amber-500" title="Featured Member" />}
+                            </div>
                             <div className="text-[10px] text-muted-foreground">{m.email}</div>
                           </td>
                           <td className="p-3">
@@ -554,20 +623,49 @@ export default function AdminPage() {
                           </td>
                           <td className="p-3">{m.profession}</td>
                           <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
-                            <button
-                              onClick={() => handleApproveMember(m.id, true)}
-                              className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer inline-flex items-center"
-                              title="Approve"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleApproveMember(m.id, false)}
-                              className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer inline-flex items-center"
-                              title="Reject"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
+                            {m.role === 'super_admin' || m.role === 'admin' ? (
+                              <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-[10px] font-bold uppercase tracking-wider">
+                                {m.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                              </span>
+                            ) : (
+                              <>
+                                {m.status === 'pending' && (
+                                  <>
+                                    <button
+                                      onClick={() => handleApproveMember(m.id, true)}
+                                      className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer inline-flex items-center"
+                                      title="Approve"
+                                    >
+                                      <Check className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleApproveMember(m.id, false)}
+                                      className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer inline-flex items-center"
+                                      title="Reject"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                )}
+                                {m.status === 'approved' && (
+                                  <button
+                                    onClick={() => handleToggleFeatured(m.id, !!m.is_featured)}
+                                    className={`px-2 py-1.5 rounded-lg cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold ${m.is_featured ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+                                    title={m.is_featured ? "Remove from Home Page" : "Feature on Home Page"}
+                                  >
+                                    <Award className="w-3.5 h-3.5" />
+                                    {m.is_featured ? 'Featured on Home' : 'Feature on Home'}
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleDeleteMember(m.id)}
+                                  className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 cursor-pointer inline-flex items-center"
+                                  title="Delete Permanently"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -586,18 +684,17 @@ export default function AdminPage() {
                   <h3 className="font-heading font-bold text-lg text-foreground">Complaints & Needs Queue</h3>
                   <p className="text-xs text-muted-foreground">Verify pending submissions, track ongoing resolved helper requests.</p>
                 </div>
-                
+
                 {/* Sub filter buttons */}
                 <div className="flex bg-secondary/60 border border-border p-1 rounded-xl w-fit">
                   {(['pending', 'approved', 'resolved', 'rejected'] as const).map((status) => (
                     <button
                       key={status}
                       onClick={() => setComplaintFilter(status)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all uppercase tracking-wider ${
-                        complaintFilter === status
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all uppercase tracking-wider ${complaintFilter === status
                           ? 'bg-primary text-white shadow-sm'
                           : 'text-muted-foreground hover:text-foreground'
-                      }`}
+                        }`}
                     >
                       {status}
                     </button>
@@ -798,7 +895,7 @@ export default function AdminPage() {
               </div>
 
               <form onSubmit={eventForm.handleSubmit(onEventSubmit)} className="space-y-4 text-xs">
-                
+
                 <div className="space-y-1.5">
                   <label className="block font-bold">Event Title</label>
                   <input

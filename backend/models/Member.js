@@ -31,6 +31,9 @@ class Member {
     if (filters.search) {
       queryFilters.full_name = { ilike: filters.search };
     }
+    if (filters.is_featured !== undefined) {
+      queryFilters.is_featured = filters.is_featured;
+    }
 
     return await SupabaseService.findAll(this.TABLE, {
       filters: queryFilters,
@@ -91,6 +94,27 @@ class Member {
    */
   static async reject(id) {
     return await SupabaseService.update(this.TABLE, { id }, { status: 'rejected', updated_at: new Date().toISOString() });
+  }
+
+  /**
+   * Admin: Toggle featured status
+   */
+  static async toggleFeatured(id, is_featured) {
+    return await SupabaseService.update(this.TABLE, { id }, { is_featured, updated_at: new Date().toISOString() });
+  }
+
+  /**
+   * Admin: Delete user permanently (cascades to member_profiles)
+   */
+  static async deletePermanently(id) {
+    return await SupabaseService.deleteAuthUser(id);
+  }
+
+  /**
+   * Retrieve all roles
+   */
+  static async findAllRoles() {
+    return await SupabaseService.findAll(this.ROLES_TABLE, { limit: 5000 });
   }
 
   /**

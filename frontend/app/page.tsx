@@ -8,160 +8,14 @@ import { News, Event, MemberProfile, Testimonial, GalleryItem, Complaint } from 
 import { useTranslation } from 'react-i18next';
 import '@/lib/i18n-config';
 
-// Fallback Mock Data in case Supabase credentials aren't configured yet
-const fallbackNews: News[] = [
-  {
-    id: '1',
-    title: 'Prajapati Community Scholarship 2026',
-    content: 'Applications are now open for the annual community scholarship program supporting higher education for our youth.',
-    category: 'Education',
-    published_at: '2026-05-30T10:00:00Z',
-    created_at: '2026-05-30T10:00:00Z',
-    image_url: null,
-    is_featured: false,
-    status: 'published',
-    author_id: null,
-    updated_at: '2026-05-30T10:00:00Z'
-  },
-  {
-    id: '2',
-    title: 'National Pottery Exhibition',
-    content: 'Join us at the National Pottery Exhibition where our community artisans will showcase their masterful terracotta creations.',
-    category: 'Culture',
-    published_at: '2026-05-29T10:00:00Z',
-    created_at: '2026-05-29T10:00:00Z',
-    image_url: null,
-    is_featured: false,
-    status: 'published',
-    author_id: null,
-    updated_at: '2026-05-29T10:00:00Z'
-  }
-];
-
-const fallbackEvents: Event[] = [
-  {
-    id: '1',
-    title: 'Annual Prajapati Parivar Gathering',
-    description: 'A grand gathering of families to celebrate our shared heritage, featuring cultural performances and networking.',
-    date: '2026-06-15T18:00:00Z',
-    location: 'Prajapati Bhavan, Ahmedabad, Gujarat',
-    capacity: 1000,
-    created_at: '2026-05-15T10:00:00Z',
-    created_by: 'admin',
-    image_url: null,
-    status: 'published',
-    updated_at: '2026-05-15T10:00:00Z'
-  },
-  {
-    id: '2',
-    title: 'Youth Career Counseling Seminar',
-    description: 'Expert guidance for students in 10th and 12th grades on career choices and opportunities.',
-    date: '2026-06-05T10:00:00Z',
-    location: 'Community Hall, Jaipur, Rajasthan',
-    capacity: 200,
-    created_at: '2026-05-15T10:00:00Z',
-    created_by: 'admin',
-    image_url: null,
-    status: 'published',
-    updated_at: '2026-05-15T10:00:00Z'
-  }
-];
-
-const fallbackMembers: MemberProfile[] = [
-  {
-    id: '1',
-    full_name: 'Rajesh Prajapati',
-    profession: 'Senior Software Engineer',
-    education: 'B.Tech in Computer Science',
-    bio: 'Passionate about technology and community development. Organizing local tech meetups.',
-    profile_photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300',
-    district: 'Ahmedabad',
-    state: 'Gujarat',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    gender: null,
-    dob: null,
-    mobile: null,
-    email: '',
-    city: null,
-    status: 'approved'
-  },
-  {
-    id: '2',
-    full_name: 'Priya Prajapati',
-    profession: 'Medical Doctor (Pediatrician)',
-    education: 'MBBS, MD',
-    bio: 'Dedicated to children\'s health. Running a free clinic for underprivileged communities on weekends.',
-    profile_photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300',
-    district: 'Jaipur',
-    state: 'Rajasthan',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    gender: null,
-    dob: null,
-    mobile: null,
-    email: '',
-    city: null,
-    status: 'approved'
-  },
-  {
-    id: '3',
-    full_name: 'Amit Prajapati',
-    profession: 'Master Artisan & Entrepreneur',
-    education: 'BFA in Ceramics',
-    bio: 'Modernizing traditional terracotta art. Exporting community crafts globally while preserving techniques.',
-    profile_photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=300',
-    district: 'Pune',
-    state: 'Maharashtra',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    gender: null,
-    dob: null,
-    mobile: null,
-    email: '',
-    city: null,
-    status: 'approved'
-  }
-];
-
-const fallbackTestimonials: Testimonial[] = [
-  {
-    id: '1',
-    user_id: null,
-    name: 'Rameshbhai Prajapati',
-    content: 'Through this platform, I reconnected with my childhood friends from my native village after 25 years. The directory is an incredible initiative for our Samaj.',
-    rating: 5,
-    status: 'approved',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    user_id: null,
-    name: 'Suresh Prajapati',
-    content: 'The community news section helps me stay updated with all regional events. I recently attended a business networking meetup that I found here.',
-    rating: 5,
-    status: 'approved',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '3',
-    user_id: null,
-    name: 'Meena Prajapati',
-    content: 'A wonderful way to keep our younger generation connected to our roots. The pottery heritage articles are beautifully written.',
-    rating: 4,
-    status: 'approved',
-    created_at: new Date().toISOString()
-  }
-];
-
 export default function HomePage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language?.startsWith('hi') ? 'hi' : 'en';
   const locale = language === 'hi' ? 'hi-IN' : 'en-IN';
-  const [news, setNews] = useState<News[]>(fallbackNews);
-  const [events, setEvents] = useState<Event[]>(fallbackEvents);
-  const [members, setMembers] = useState<MemberProfile[]>(fallbackMembers);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(fallbackTestimonials);
+  const [news, setNews] = useState<News[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [members, setMembers] = useState<MemberProfile[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -193,16 +47,16 @@ export default function HomePage() {
           setEvents(eventsData);
         }
 
-        // Fetch Featured Members (using those with complete profiles/photos)
-        const { data: membersData } = await supabase
-          .from('profiles')
-          .select('*')
-          .not('profile_photo', 'is', null)
-          .order('created_at', { ascending: false })
-          .limit(3);
-        
-        if (membersData && membersData.length > 0) {
-          setMembers(membersData);
+        // Fetch Featured Members from API to include role information
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+        try {
+          const membersRes = await fetch(`${apiUrl}/members?is_featured=true&limit=3`);
+          const membersJson = await membersRes.json();
+          if (membersRes.ok && membersJson.success && membersJson.data?.members) {
+            setMembers(membersJson.data.members);
+          }
+        } catch (e) {
+          console.error("Error fetching featured members for home page:", e);
         }
 
         // Fetch Testimonials
@@ -502,7 +356,7 @@ export default function HomePage() {
           {members.map((member) => (
             <div key={member.id} className="bg-card border border-border rounded-2xl p-6 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow relative">
               <span className="absolute top-4 right-4 text-xs font-bold px-2 py-0.5 bg-orange-100 dark:bg-orange-950/40 text-primary rounded-full">
-                {member.state}
+                {member.role === 'super_admin' ? 'Super Admin' : (member.role === 'admin' ? 'Admin' : member.state)}
               </span>
               <img
                 src={member.profile_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=300'}
@@ -513,7 +367,7 @@ export default function HomePage() {
               <p className="text-xs text-primary font-medium mt-1">{member.profession}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{member.education}</p>
               <p className="text-xs text-muted-foreground mt-4 line-clamp-2 italic px-2">
-                "{member.bio || t('home.verifiedMember')}"
+                "{member.bio || (member.role === 'super_admin' ? 'Super Admin' : t('home.verifiedMember'))}"
               </p>
               <Link href="/directory" className="mt-5 text-xs font-semibold hover:underline text-primary">
                 {t('directory.viewProfile')}

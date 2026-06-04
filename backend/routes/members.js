@@ -18,7 +18,13 @@ router.get('/:id', optionalAuth, MemberController.getById);
 router.put('/:id/approve', requireAuth, requireRole(['admin', 'super_admin']), MemberController.approve);
 router.put('/:id/reject', requireAuth, requireRole(['admin', 'super_admin']), MemberController.reject);
 
+// Admin feature operations
+router.put('/:id/featured', requireAuth, requireRole(['admin', 'super_admin']), MemberController.toggleFeatured);
+
 // Role assignment route (super_admin or admin)
 router.put('/:id/role', requireAuth, requireRole(['admin', 'super_admin']), MemberController.changeRole);
+
+// Admin permanent deletion
+router.delete('/:id', requireAuth, requireRole(['admin', 'super_admin']), MemberController.deleteMember);
 
 module.exports = router;

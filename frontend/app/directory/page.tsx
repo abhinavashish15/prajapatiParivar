@@ -204,11 +204,32 @@ export default function DirectoryPage() {
                 key={member.id}
                 className="bg-card border border-border rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group"
               >
-                {/* Verified Tag */}
-                <div className="absolute top-4 right-4 flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full">
-                  <UserCheck className="w-3.5 h-3.5" />
-                  Verified
-                </div>
+                {/* Status Tag */}
+                {member.role === 'super_admin' || member.role === 'admin' ? (
+                  <div className="absolute top-4 right-4 flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <UserCheck className="w-3.5 h-3.5" />
+                    {member.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                  </div>
+                ) : (
+                  <>
+                    {member.status === 'approved' && (
+                      <div className="absolute top-4 right-4 flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full">
+                        <UserCheck className="w-3.5 h-3.5" />
+                        Verified
+                      </div>
+                    )}
+                    {member.status === 'pending' && (
+                      <div className="absolute top-4 right-4 flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-full">
+                        Pending
+                      </div>
+                    )}
+                    {member.status === 'rejected' && (
+                      <div className="absolute top-4 right-4 flex items-center gap-1 text-[10px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/30 px-2 py-0.5 rounded-full">
+                        Rejected
+                      </div>
+                    )}
+                  </>
+                )}
 
                 <div className="space-y-4">
                   {/* Photo & Basic Details */}

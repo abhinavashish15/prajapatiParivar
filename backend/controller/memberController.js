@@ -10,7 +10,7 @@ class MemberController {
    */
   static async getAll(req, res) {
     try {
-      const { status, gender, state, city, district, profession, search, page = 1, limit = 10 } = req.query;
+      const { status, gender, state, city, district, profession, search, page = 1, limit = 10, is_featured } = req.query;
       
       const parsedLimit = parseInt(limit, 10);
       const offset = (parseInt(page, 10) - 1) * parsedLimit;
@@ -26,7 +26,8 @@ class MemberController {
         city,
         district,
         profession,
-        search
+        search,
+        is_featured: is_featured !== undefined ? (is_featured === 'true') : undefined
       };
 
       const { data, count, error: dbError } = await Member.findAll(filters, {
@@ -37,8 +38,20 @@ class MemberController {
 
       if (dbError) throw dbError;
 
+      // Fetch user roles to merge into member data
+      const { data: rolesData, error: rolesError } = await require('../models/Member').findAllRoles();
+      const rolesMap = {};
+      if (!rolesError && rolesData) {
+        rolesData.forEach(r => { rolesMap[r.id] = r.role; });
+      }
+
+      const membersWithRoles = data.map(m => ({
+        ...m,
+        role: rolesMap[m.id] || 'member' // default to member if they have a profile
+      }));
+
       return success(res, 'Members fetched successfully', {
-        members: data,
+        members: membersWithRoles,
         pagination: {
           total: count,
           page: parseInt(page, 10),
@@ -168,6 +181,12 @@ class MemberController {
   static async approve(req, res) {
     try {
       const { id } = req.params;
+      
+      const roleData = await Member.getRole(id);
+      if (roleData && (roleData.role === 'admin' || roleData.role === 'super_admin')) {
+        return error(res, 'Admin accounts are independent and cannot have their status modified.', 403);
+      }
+
       const updated = await Member.approve(id);
       return success(res, 'Member profile approved successfully', updated);
     } catch (err) {
@@ -182,11 +201,37 @@ class MemberController {
   static async reject(req, res) {
     try {
       const { id } = req.params;
+
+      const roleData = await Member.getRole(id);
+      if (roleData && (roleData.role === 'admin' || roleData.role === 'super_admin')) {
+        return error(res, 'Admin accounts are independent and cannot be rejected.', 403);
+      }
+
       const updated = await Member.reject(id);
       return success(res, 'Member profile rejected successfully', updated);
     } catch (err) {
       console.error('MemberController.reject error:', err);
       return error(res, 'Failed to reject member profile.', 500);
+    }
+  }
+
+  /**
+   * Admin: Toggle featured status
+   */
+  static async toggleFeatured(req, res) {
+    try {
+      const { id } = req.params;
+      const { is_featured } = req.body;
+      
+      if (typeof is_featured !== 'boolean') {
+        return error(res, 'Invalid is_featured value. Must be a boolean.', 400);
+      }
+
+      const updated = await Member.toggleFeatured(id, is_featured);
+      return success(res, `Member profile featured status updated to ${is_featured}`, updated);
+    } catch (err) {
+      console.error('MemberController.toggleFeatured error:', err);
+      return error(res, 'Failed to update featured status.', 500);
     }
   }
 
@@ -212,6 +257,30 @@ class MemberController {
     } catch (err) {
       console.error('MemberController.changeRole error:', err);
       return error(res, 'Failed to update user role.', 500);
+    }
+  }
+
+  /**
+   * Admin: Permanently delete a member and their auth account
+   */
+  static async deleteMember(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Ensure super_admin role if preventing normal admins from deleting, 
+      // but if we want admins to delete, we just proceed.
+      // (Assuming `requireRole(['admin', 'super_admin'])` handles basic auth)
+
+      // Prevent user from deleting themselves
+      if (req.user.id === id) {
+        return error(res, 'You cannot delete your own account.', 403);
+      }
+
+      const result = await Member.deletePermanently(id);
+      return success(res, 'User account and profile permanently deleted.', result);
+    } catch (err) {
+      console.error('MemberController.deleteMember error:', err);
+      return error(res, 'Failed to permanently delete user.', 500);
     }
   }
 }

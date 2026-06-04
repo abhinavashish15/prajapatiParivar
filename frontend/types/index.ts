@@ -31,6 +31,8 @@ export interface MemberProfile {
   education: string | null;
   bio: string | null;
   status: ProfileStatus;
+  role?: string;
+  is_featured?: boolean;
   created_at: string;
   updated_at: string;
 }

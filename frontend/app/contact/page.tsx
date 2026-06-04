@@ -1,70 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Mail, Phone, MapPin, CheckCircle, Send, Globe, Share2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-
-// Zod Schema
-const contactSchema = z.object({
-  name: z.string().min(3, { message: 'Name must be at least 3 characters long' }),
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  mobile: z.string().optional().refine((val) => !val || /^[0-9+ ]{10,14}$/.test(val), {
-    message: 'Please enter a valid phone number (10-12 digits)'
-  }),
-  subject: z.string().min(3, { message: 'Subject must be at least 3 characters' }),
-  message: z.string().min(10, { message: 'Message must be at least 10 characters long' })
-});
-
-type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
-  const [isSubmitSuccess, setIsSubmitSuccess] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm<ContactFormValues>({
-    resolver: zodResolver(contactSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      mobile: '',
-      subject: '',
-      message: ''
-    }
-  });
-
-  const onSubmit = async (data: ContactFormValues) => {
-    setSubmitting(true);
-    try {
-      const { error } = await supabase.from('contact_messages').insert({
-        name: data.name,
-        email: data.email,
-        mobile: data.mobile || null,
-        subject: data.subject,
-        message: data.message
-      });
-
-      if (!error) {
-        setIsSubmitSuccess(true);
-        reset();
-      } else {
-        alert('Could not submit form. Please check network.');
-      }
-    } catch {
-      // Fallback success behavior for preview
-      setIsSubmitSuccess(true);
-      reset();
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="flex flex-col w-full pb-20 clay-pattern">
@@ -104,9 +42,7 @@ export default function ContactPage() {
                 <div className="text-sm">
                   <h4 className="font-bold text-foreground">Central Office</h4>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    Prajapati Kalyan Bhawan,<br />
-                    Sector 5, Mansarovar,<br />
-                    Jaipur, Rajasthan - 302020
+                    Darbhanga Bihar 847405
                   </p>
                 </div>
               </div>
@@ -119,8 +55,7 @@ export default function ContactPage() {
                 <div className="text-sm">
                   <h4 className="font-bold text-foreground">Phone & Mobile</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Helpdesk: +91 141 2749321 <br />
-                    WhatsApp Support: +91 98765 43210
+                    Helpdesk / WhatsApp: +91 6376506645
                   </p>
                 </div>
               </div>
@@ -133,8 +68,7 @@ export default function ContactPage() {
                 <div className="text-sm">
                   <h4 className="font-bold text-foreground">Email Contact</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    General: info@prajapatiparivar.in <br />
-                    Support: admin@prajapatiparivar.in
+                    abhinavashissh@gmail.com
                   </p>
                 </div>
               </div>
@@ -164,122 +98,22 @@ export default function ContactPage() {
 
           </div>
 
-          {/* Form Panel (Col 3) */}
-          <div className="lg:col-span-3 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm">
-            {isSubmitSuccess ? (
-              <div className="text-center py-12 space-y-4">
-                <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-950/40 rounded-full flex items-center justify-center text-emerald-600 mx-auto border border-emerald-200">
-                  <CheckCircle className="w-8 h-8" />
-                </div>
-                <h3 className="font-heading font-bold text-xl text-foreground">Message Sent!</h3>
-                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Thank you for reaching out to us. We have received your query and our team will respond back to your email within 48 business hours.
-                </p>
-                <div className="pt-4">
-                  <button
-                    onClick={() => setIsSubmitSuccess(false)}
-                    className="px-6 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-xs font-bold hover:bg-secondary/80 transition-all cursor-pointer"
-                  >
-                    Send Another Message
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <h3 className="font-heading font-bold text-xl text-foreground mb-4">Send a Message</h3>
-                
-                {/* Name */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-foreground">Full Name</label>
-                  <input
-                    type="text"
-                    {...register('name')}
-                    placeholder="Enter your name"
-                    className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-                  />
-                  {errors.name && (
-                    <span className="text-[10px] text-destructive font-medium block">{errors.name.message}</span>
-                  )}
-                </div>
-
-                {/* Email and Mobile */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-foreground">Email Address</label>
-                    <input
-                      type="email"
-                      {...register('email')}
-                      placeholder="name@example.com"
-                      className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-                    />
-                    {errors.email && (
-                      <span className="text-[10px] text-destructive font-medium block">{errors.email.message}</span>
-                    )}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-foreground">Mobile Number (Optional)</label>
-                    <input
-                      type="text"
-                      {...register('mobile')}
-                      placeholder="e.g. 9876543210"
-                      className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-                    />
-                    {errors.mobile && (
-                      <span className="text-[10px] text-destructive font-medium block">{errors.mobile.message}</span>
-                    )}
-                  </div>
-
-                </div>
-
-                {/* Subject */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-foreground">Subject</label>
-                  <input
-                    type="text"
-                    {...register('subject')}
-                    placeholder="Brief subject of your query"
-                    className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-                  />
-                  {errors.subject && (
-                    <span className="text-[10px] text-destructive font-medium block">{errors.subject.message}</span>
-                  )}
-                </div>
-
-                {/* Message */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-foreground">Message</label>
-                  <textarea
-                    {...register('message')}
-                    placeholder="Describe your query in detail..."
-                    rows={4}
-                    className="w-full bg-background border border-input rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
-                  />
-                  {errors.message && (
-                    <span className="text-[10px] text-destructive font-medium block">{errors.message.message}</span>
-                  )}
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    {submitting ? (
-                      'Submitting...'
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        Send Message
-                      </>
-                    )}
-                  </button>
-                </div>
-
-              </form>
-            )}
+          {/* Direct Email Panel (Col 3) */}
+          <div className="lg:col-span-3 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col justify-center items-center text-center space-y-6">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto">
+              <Mail className="w-10 h-10" />
+            </div>
+            <h3 className="font-heading font-bold text-2xl text-foreground">Reach Out To Us</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              We'd love to hear from you. For any inquiries, support requests, or feedback, please drop us an email directly at:
+            </p>
+            <a 
+              href="mailto:abhinavashissh@gmail.com" 
+              className="inline-flex items-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-bold text-lg rounded-2xl hover:bg-primary/90 transition-transform hover:scale-105 shadow-md"
+            >
+              <Send className="w-5 h-5" />
+              abhinavashissh@gmail.com
+            </a>
           </div>
 
         </div>

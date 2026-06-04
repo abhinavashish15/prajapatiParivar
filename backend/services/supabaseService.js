@@ -153,6 +153,20 @@ class SupabaseService {
       throw err;
     }
   }
+
+  /**
+   * Delete a user from auth.users (cascades to other tables)
+   */
+  static async deleteAuthUser(userId) {
+    try {
+      const { data, error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error(`SupabaseService.deleteAuthUser Error:`, err.message || err);
+      throw err;
+    }
+  }
 }
 
 module.exports = SupabaseService;
