@@ -614,7 +614,11 @@ export default function AdminPage() {
                           <td className="p-3">
                             <div className="font-bold text-foreground flex items-center gap-2">
                               {m.full_name}
-                              {m.is_featured && <Award className="w-3.5 h-3.5 text-amber-500" title="Featured Member" />}
+                              {m.is_featured && (
+                                <span title="Featured Member">
+                                  <Award className="w-3.5 h-3.5 text-amber-500" />
+                                </span>
+                              )}
                             </div>
                             <div className="text-[10px] text-muted-foreground">{m.email}</div>
                           </td>
